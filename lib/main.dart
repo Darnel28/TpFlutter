@@ -4,7 +4,9 @@ import 'pages/login_page.dart';
 import 'pages/statistics_pages.dart';
 import 'pages/wallet_page.dart';
 import 'pages/add_article_page.dart';
+import 'pages/shopping_list_page.dart';
 import 'dao/user_dao_web.dart';
+import 'dao/article_dao_web.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -53,12 +55,13 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
+  final ArticleDaoWeb _articleDao = ArticleDaoWeb();
 
   @override
   Widget build(BuildContext context) {
     final pages = [
       _buildHomeContent(context),
-      const Center(child: Text('Liste Actuelle')),
+      const ShoppingListPage(),
       const Center(child: Text('Ajouter')),
       const WalletPage(),
       const StatisticsPage(),
@@ -85,6 +88,12 @@ class _MyHomePageState extends State<MyHomePage> {
                     backgroundColor: Colors.green,
                   ),
                 );
+                // Sauvegarder l'article
+                if (article != null) {
+                  _articleDao.insertArticle(article);
+                  // Naviguer vers la liste
+                  setState(() => _currentIndex = 1);
+                }
               }
             });
           } else {

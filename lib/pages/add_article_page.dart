@@ -135,59 +135,26 @@ class _AddArticlePageState extends State<AddArticlePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Nom
-                Row(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      flex: 2,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Nom:',
-                            style: TextStyle(fontWeight: FontWeight.w500),
-                          ),
-                          const SizedBox(height: 4),
-                          TextFormField(
-                            controller: _nomController,
-                            decoration: InputDecoration(
-                              filled: true,
-                              fillColor: Colors.white,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide.none,
-                              ),
-                            ),
-                            validator: (value) =>
-                                value?.isEmpty ?? true ? 'Requis' : null,
-                          ),
-                        ],
-                      ),
+                    const Text(
+                      'Nom:',
+                      style: TextStyle(fontWeight: FontWeight.w500),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Unité',
-                            style: TextStyle(fontWeight: FontWeight.w500),
-                          ),
-                          const SizedBox(height: 4),
-                          TextFormField(
-                            controller: _uniteController,
-                            decoration: InputDecoration(
-                              filled: true,
-                              fillColor: Colors.white,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide.none,
-                              ),
-                            ),
-                            validator: (value) =>
-                                value?.isEmpty ?? true ? 'Requis' : null,
-                          ),
-                        ],
+                    const SizedBox(height: 4),
+                    TextFormField(
+                      controller: _nomController,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
+                      validator: (value) =>
+                          value?.isEmpty ?? true ? 'Requis' : null,
                     ),
                   ],
                 ),
@@ -230,8 +197,6 @@ class _AddArticlePageState extends State<AddArticlePage> {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    const Expanded(child: SizedBox()),
                   ],
                 ),
                 const SizedBox(height: 16),
