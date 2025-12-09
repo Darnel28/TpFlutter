@@ -30,7 +30,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
-  bool _isConnected = false;
 
   @override
   Widget build(BuildContext context) {
@@ -48,15 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   PopupMenuButton<String>(
                     icon: const Icon(Icons.menu, size: 30),
                     onSelected: (value) {
-                      if (value == 'connect') {
-                        setState(() {
-                          _isConnected = true;
-                        });
-                      } else if (value == 'disconnect') {
-                        setState(() {
-                          _isConnected = false;
-                        });
-                      }
+                      // Actions de connexion/déconnexion à implémenter
                     },
                     itemBuilder: (BuildContext context) => [
                       const PopupMenuItem<String>(
