@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'pages/login_page.dart';
 import 'pages/statistics_pages.dart';
 import 'pages/wallet_page.dart';
+import 'pages/add_article_page.dart';
 import 'dao/user_dao_web.dart';
 
 void main() async {
@@ -68,7 +69,28 @@ class _MyHomePageState extends State<MyHomePage> {
       body: SafeArea(child: pages[_currentIndex]),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
+        onTap: (index) {
+          if (index == 2) {
+            // Bouton + : ouvrir la page d'ajout
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AddArticlePage(),
+              ),
+            ).then((article) {
+              if (article != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Article ajouté avec succès'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              }
+            });
+          } else {
+            setState(() => _currentIndex = index);
+          }
+        },
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
