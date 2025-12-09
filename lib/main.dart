@@ -70,45 +70,141 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       body: SafeArea(child: pages[_currentIndex]),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          if (index == 2) {
-            // Bouton + : ouvrir la page d'ajout
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const AddArticlePage(),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavButton(
+                  icon: Icons.person_outline,
+                  label: 'Accueil',
+                  isSelected: _currentIndex == 0,
+                  onTap: () => setState(() => _currentIndex = 0),
+                ),
+                _buildNavButton(
+                  icon: Icons.bookmark_outline,
+                  label: 'ListeActuelle',
+                  isSelected: _currentIndex == 1,
+                  onTap: () => setState(() => _currentIndex = 1),
+                ),
+                _buildAddButton(context),
+                _buildNavButton(
+                  icon: Icons.account_balance_wallet_outlined,
+                  label: 'Portefeuille',
+                  isSelected: _currentIndex == 3,
+                  onTap: () => setState(() => _currentIndex = 3),
+                ),
+                _buildNavButton(
+                  icon: Icons.bar_chart_outlined,
+                  label: 'Statistiques',
+                  isSelected: _currentIndex == 4,
+                  onTap: () => setState(() => _currentIndex = 4),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavButton({
+    required IconData icon,
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: isSelected ? Colors.blue : Colors.transparent,
+                width: 2,
               ),
-            ).then((article) {
-              if (article != null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Article ajouté avec succès'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-                // Sauvegarder l'article
-                if (article != null) {
-                  _articleDao.insertArticle(article);
-                  // Naviguer vers la liste
-                  setState(() => _currentIndex = 1);
-                }
-              }
-            });
-          } else {
-            setState(() => _currentIndex = index);
+            ),
+            child: Icon(
+              icon,
+              size: 24,
+              color: isSelected ? Colors.blue : Colors.grey,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: isSelected ? Colors.blue : Colors.grey,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const AddArticlePage(),
+          ),
+        ).then((article) {
+          if (article != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Article ajouté avec succès'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            _articleDao.insertArticle(article);
+            setState(() => _currentIndex = 1);
           }
-        },
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Accueil'),
-          BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: 'Liste Actuelle'),
-          BottomNavigationBarItem(icon: Icon(Icons.add_circle, size: 40, color: Colors.blue), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.folder), label: 'Portefeuille'),
-          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Statistique'),
+        });
+      },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.blue,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.add,
+              size: 28,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Add',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.blue,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
