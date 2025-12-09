@@ -47,6 +47,7 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       if (user != null) {
+        
         // 🔐 Sauvegarder la session
         await _userDao.saveSession(user);
         
