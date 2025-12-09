@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:html' as html;
 import 'dart:convert';
+import '../dao/transaction_dao_web.dart';
+import '../models/transaction.dart';
 
 class WalletPage extends StatefulWidget {
   const WalletPage({super.key});
@@ -10,28 +12,48 @@ class WalletPage extends StatefulWidget {
 }
 
 class _WalletPageState extends State<WalletPage> {
-  late double soldeActuel;
+  double soldeActuel = 452.00;
+  final TextEditingController _montantRealController = TextEditingController();
   final TextEditingController _montantController = TextEditingController();
   static const String _storageKey = 'wallet_solde';
-
-  // Dépenses statiques pour l'exemple
-  final List<Map<String, dynamic>> derniereDepenses = [
-    {'montant': -178.50, 'description': 'Courses du 08/12', 'date': '08/12'},
-    {'montant': -210.25, 'description': '01/12', 'date': '01/12'},
-  ];
+  late TransactionDaoWeb _transactionDao;
+  List<Transaction> derniereDepenses = [];
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _chargerSolde();
+    _transactionDao = TransactionDaoWeb();
+    _chargerDonnees();
   }
 
-  void _chargerSolde() {
+  Future<void> _chargerDonnees() async {
     try {
       final stored = html.window.localStorage[_storageKey];
-      soldeActuel = stored != null ? double.parse(stored) : 452.00;
+      double soldeTemp = 452.00;
+      if (stored != null) {
+        try {
+          soldeTemp = double.parse(stored);
+        } catch (e) {
+          soldeTemp = 452.00;
+        }
+      }
+      final transactions = await _transactionDao.getLastTransactions(2);
+      if (mounted) {
+        setState(() {
+          soldeActuel = soldeTemp;
+          derniereDepenses = transactions;
+          isLoading = false;
+        });
+      }
     } catch (e) {
-      soldeActuel = 452.00;
+      if (mounted) {
+        setState(() {
+          soldeActuel = 452.00;
+          derniereDepenses = [];
+          isLoading = false;
+        });
+      }
     }
   }
 
@@ -92,6 +114,12 @@ class _WalletPageState extends State<WalletPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+    
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
@@ -175,44 +203,56 @@ class _WalletPageState extends State<WalletPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: derniereDepenses
-                      .map(
-                        (depense) => Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${depense['montant'].toStringAsFixed(2)} FCFA',
-                                style: const TextStyle(
-                                  color: Colors.red,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
+                if (derniereDepenses.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
+                    child: Text(
+                      'Aucune dépense enregistrée',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 14,
+                      ),
+                    ),
+                  )
+                else
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: derniereDepenses
+                        .map(
+                          (transaction) => Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '- ${transaction.montant.toStringAsFixed(2)} FCFA',
+                                  style: const TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                depense['description'],
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 12,
+                                const SizedBox(height: 4),
+                                Text(
+                                  transaction.description,
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 12,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                depense['date'],
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 12,
+                                const SizedBox(height: 2),
+                                Text(
+                                  '${transaction.date.day}/${transaction.date.month}',
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 12,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      )
-                      .toList(),
-                ),
+                        )
+                        .toList(),
+                  ),
               ],
             ),
             const SizedBox(height: 32),
@@ -238,7 +278,21 @@ class _WalletPageState extends State<WalletPage> {
                     ),
                   ),
                   const SizedBox(height: 16),
+                  // Affichage du montant réel dépensé (dernière transaction)
+                  if (derniereDepenses.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Text(
+                        'Montant réel dépensé : ${derniereDepenses.first.montant.toStringAsFixed(2)} FCFA',
+                        style: const TextStyle(
+                          color: Colors.blue,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
                   TextField(
+                    controller: _montantRealController,
                     decoration: InputDecoration(
                       hintText: 'Montant Réel Dépensé: FCFA',
                       filled: true,
@@ -258,13 +312,39 @@ class _WalletPageState extends State<WalletPage> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Achats validés'),
-                            backgroundColor: Colors.blue,
-                          ),
-                        );
+                      onPressed: () async {
+                        final montantReel = double.tryParse(_montantRealController.text);
+                        if (montantReel != null && montantReel > 0) {
+                          // Déduire du solde
+                          setState(() {
+                            soldeActuel -= montantReel;
+                            _sauvegarderSolde();
+                          });
+                          // Sauvegarder la transaction
+                          final transaction = Transaction(
+                            montant: montantReel,
+                            description: 'Courses',
+                          );
+                          await _transactionDao.addTransaction(transaction);
+                          // Réinitialiser et rafraîchir
+                          _montantRealController.clear();
+                          await _chargerDonnees();
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Achats validés: -$montantReel FCFA'),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          }
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Veuillez entrer un montant valide'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
@@ -294,6 +374,7 @@ class _WalletPageState extends State<WalletPage> {
   @override
   void dispose() {
     _montantController.dispose();
+    _montantRealController.dispose();
     super.dispose();
   }
 }

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/article.dart';
 import '../dao/article_dao_web.dart';
-import '../pages/wallet_page.dart';
+import '../dao/transaction_dao_web.dart';
+import '../models/transaction.dart';
 import 'dart:html' as html;
 
 class ShoppingListPage extends StatefulWidget {
@@ -56,6 +57,13 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
   void _marquerAchete(Article article) async {
     article.aAcheter = false;
     await _articleDao.updateArticle(article);
+    // Créer une transaction pour cet achat
+    final transactionDao = TransactionDaoWeb();
+    final transaction = Transaction(
+      montant: article.prixEstime,
+      description: article.nom,
+    );
+    await transactionDao.addTransaction(transaction);
     await _chargerDonnees();
     
     ScaffoldMessenger.of(context).showSnackBar(
