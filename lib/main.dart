@@ -1,11 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'pages/login_page.dart';
+import 'dao/user_dao_web.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  Widget homePage = const LoginPage();
+  
+  // Vérifier si l'utilisateur est connecté (web uniquement)
+  if (kIsWeb) {
+    final userDao = UserDaoWeb();
+    final loggedUser = await userDao.getLoggedUser();
+    
+    if (loggedUser != null) {
+      homePage = const MyHomePage();
+      print('✅ Utilisateur déjà connecté: ${loggedUser.email}');
+    }
+  }
+  
+  runApp(MyApp(homePage: homePage));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final Widget homePage;
+  
+  const MyApp({super.key, required this.homePage});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +36,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const MyHomePage(),
+      home: homePage,
     );
   }
 }
