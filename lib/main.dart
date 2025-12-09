@@ -211,99 +211,266 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildHomeContent(BuildContext context) {
-    return Column(
-      children: [
-        // Header
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.menu, size: 30),
-                onSelected: (value) {
-                  // Actions de connexion/déconnexion à implémenter
-                },
-                itemBuilder: (BuildContext context) => const [
-                  PopupMenuItem<String>(
-                    value: 'connect',
-                    child: Row(
-                      children: [
-                        Icon(Icons.person, color: Colors.blue),
-                        SizedBox(width: 12),
-                        Text('Se connecter'),
-                      ],
-                    ),
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // Header épuré avec gradient
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.blue.shade600, Colors.blue.shade400],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 32, 24, 40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Bienvenue',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.8),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'Course Manager',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: PopupMenuButton<String>(
+                          icon: const Icon(Icons.menu, color: Colors.white, size: 24),
+                          onSelected: (value) {},
+                          itemBuilder: (BuildContext context) => const [
+                            PopupMenuItem<String>(
+                              value: 'connect',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.person, color: Colors.blue),
+                                  SizedBox(width: 12),
+                                  Text('Se connecter'),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem<String>(
+                              value: 'disconnect',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.logout, color: Colors.red),
+                                  SizedBox(width: 12),
+                                  Text('Se déconnecter'),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  PopupMenuItem<String>(
-                    value: 'disconnect',
-                    child: Row(
-                      children: [
-                        Icon(Icons.logout, color: Colors.red),
-                        SizedBox(width: 12),
-                        Text('Se déconnecter'),
-                      ],
+                  const SizedBox(height: 24),
+                  Text(
+                    'Gérez vos courses avec style',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
                     ),
                   ),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
-        const Text(
-          'Course Manager',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87),
-        ),
-        const SizedBox(height: 40),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: GridView.count(
-              crossAxisCount: 2,
-              mainAxisSpacing: 20,
-              crossAxisSpacing: 20,
+          
+          // Cartes de fonctionnalités
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildMenuCard('Liste Actuelle', Icons.list_alt, Colors.blue, onTap: () {
-                  setState(() => _currentIndex = 1);
-                }),
-                _buildMenuCard('Budget', Icons.savings, Colors.green, onTap: () {
-                  // navigate to budget page (placeholder)
-                }),
-                _buildMenuCard('Portefeuille', Icons.account_balance_wallet, Colors.purple, onTap: () {
-                  setState(() => _currentIndex = 3);
-                }),
-                _buildMenuCard('Statistics /\nPriorités', Icons.trending_up, Colors.orange, onTap: () {
-                  setState(() => _currentIndex = 4);
-                }),
+                const Text(
+                  'Accès Rapide',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                GridView.count(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 16,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: [
+                    _buildElegantCard(
+                      title: 'Liste Actuelle',
+                      icon: Icons.shopping_bag_outlined,
+                      color: Colors.blue,
+                      onTap: () => setState(() => _currentIndex = 1),
+                    ),
+                    _buildElegantCard(
+                      title: 'Portefeuille',
+                      icon: Icons.account_balance_wallet_outlined,
+                      color: Colors.purple,
+                      onTap: () => setState(() => _currentIndex = 3),
+                    ),
+                    _buildElegantCard(
+                      title: 'Statistiques',
+                      icon: Icons.trending_up_outlined,
+                      color: Colors.orange,
+                      onTap: () => setState(() => _currentIndex = 4),
+                    ),
+                    _buildElegantCard(
+                      title: 'Ajouter Article',
+                      icon: Icons.add_circle_outline,
+                      color: Colors.green,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AddArticlePage(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
-        ),
-      ],
+
+          // Section Info
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blue.shade200, width: 1),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          Icons.info_outline,
+                          color: Colors.blue.shade600,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'À propos',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Course Manager vous aide à organiser vos courses, gérer votre budget et suivre vos dépenses en temps réel.',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade700,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
     );
   }
 
-  Widget _buildMenuCard(String title, IconData icon, Color color, {required VoidCallback onTap}) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: color,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 50, color: Colors.white),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+  Widget _buildElegantCard({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade200, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(icon, color: color, size: 32),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
