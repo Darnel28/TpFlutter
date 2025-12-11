@@ -27,6 +27,153 @@ void main() async {
   runApp(MyApp(homePage: homePage));
 }
 
+class _TaskItem extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final Color color;
+  final IconData icon;
+
+  const _TaskItem({
+    required this.title,
+    required this.subtitle,
+    required this.color,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProjectCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final double percent;
+  final Color color;
+
+  const _ProjectCard({
+    required this.title,
+    required this.subtitle,
+    required this.percent,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 150,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            height: 48,
+            width: 48,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                CircularProgressIndicator(
+                  value: percent,
+                  strokeWidth: 5,
+                  backgroundColor: Colors.white24,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+                Center(
+                  child: Text(
+                    '${(percent * 100).round()}%',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            subtitle,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.9),
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class MyApp extends StatelessWidget {
   final Widget homePage;
   
@@ -56,6 +203,40 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
   final ArticleDaoWeb _articleDao = ArticleDaoWeb();
+  final UserDaoWeb _userDao = UserDaoWeb();
+
+  int _totalTasks = 0;
+  int _pendingTasks = 0;
+  int _doneTasks = 0;
+  String _userName = 'Utilisateur';
+  String _userRole = 'Course Manager';
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshTasks();
+    _loadUserInfo();
+  }
+
+  Future<void> _loadUserInfo() async {
+    final user = await _userDao.getLoggedUser();
+    if (user != null) {
+      setState(() {
+        _userName = user.nom;
+        _userRole = 'Course Manager';
+      });
+    }
+  }
+
+  Future<void> _refreshTasks() async {
+    final articles = await _articleDao.getAllArticles();
+    final pending = articles.where((a) => a.aAcheter).length;
+    setState(() {
+      _totalTasks = articles.length;
+      _pendingTasks = pending;
+      _doneTasks = articles.length - pending;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -178,6 +359,7 @@ class _MyHomePageState extends State<MyHomePage> {
             );
             _articleDao.insertArticle(article);
             setState(() => _currentIndex = 1);
+            _refreshTasks();
           }
         });
       },
@@ -186,7 +368,7 @@ class _MyHomePageState extends State<MyHomePage> {
         children: [
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Colors.blue,
               shape: BoxShape.circle,
             ),
@@ -211,210 +393,227 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildHomeContent(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          // Header épuré avec gradient
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.blue.shade600, Colors.blue.shade400],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+    const bg = Color(0xFFF6F0E7);
+    return Container(
+      color: bg,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header avec avatar, menu et recherche
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Color(0xFFF3A75F),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(28),
+                  bottomRight: Radius.circular(28),
+                ),
               ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 32, 24, 40),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Bienvenue',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            'Course Manager',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: PopupMenuButton<String>(
-                          icon: const Icon(Icons.menu, color: Colors.white, size: 24),
-                          onSelected: (value) {},
-                          itemBuilder: (BuildContext context) => const [
-                            PopupMenuItem<String>(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 32, 20, 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        PopupMenuButton<String>(
+                          icon: const Icon(Icons.menu, color: Colors.black87, size: 28),
+                          onSelected: (value) async {
+                            if (value == 'connect') {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const LoginPage()),
+                              );
+                            } else if (value == 'disconnect') {
+                              await _userDao.logout();
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Déconnecté'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          itemBuilder: (context) => const [
+                            PopupMenuItem(
                               value: 'connect',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.person, color: Colors.blue),
-                                  SizedBox(width: 12),
-                                  Text('Se connecter'),
-                                ],
+                              child: Text('Se connecter'),
+                            ),
+                            PopupMenuItem(
+                              value: 'disconnect',
+                              child: Text('Se déconnecter'),
+                            ),
+                          ],
+                        ),
+                        const Icon(Icons.search, color: Colors.black87, size: 26),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.person, size: 42, color: Colors.black87),
+                        ),
+                        const SizedBox(width: 14),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _userName,
+                              style: const TextStyle(
+                                color: Colors.black87,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                            PopupMenuItem<String>(
-                              value: 'disconnect',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.logout, color: Colors.red),
-                                  SizedBox(width: 12),
-                                  Text('Se déconnecter'),
-                                ],
+                            const SizedBox(height: 4),
+                            Text(
+                              _userRole,
+                              style: const TextStyle(
+                                color: Colors.black54,
+                                fontSize: 14,
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Gérez vos courses avec style',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          
-          // Cartes de fonctionnalités
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Accès Rapide',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                GridView.count(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: [
-                    _buildElegantCard(
-                      title: 'Liste Actuelle',
-                      icon: Icons.shopping_bag_outlined,
-                      color: Colors.blue,
-                      onTap: () => setState(() => _currentIndex = 1),
-                    ),
-                    _buildElegantCard(
-                      title: 'Portefeuille',
-                      icon: Icons.account_balance_wallet_outlined,
-                      color: Colors.purple,
-                      onTap: () => setState(() => _currentIndex = 3),
-                    ),
-                    _buildElegantCard(
-                      title: 'Statistiques',
-                      icon: Icons.trending_up_outlined,
-                      color: Colors.orange,
-                      onTap: () => setState(() => _currentIndex = 4),
-                    ),
-                    _buildElegantCard(
-                      title: 'Ajouter Article',
-                      icon: Icons.add_circle_outline,
-                      color: Colors.green,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const AddArticlePage(),
-                          ),
-                        );
-                      },
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-
-          // Section Info
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.blue.shade200, width: 1),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade100,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(
-                          Icons.info_outline,
-                          color: Colors.blue.shade600,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'À propos',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Section My Tasks
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: const [
                   Text(
-                    'Course Manager vous aide à organiser vos courses, gérer votre budget et suivre vos dépenses en temps réel.',
+                    'My Tasks',
                     style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade700,
-                      height: 1.5,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.black87,
                     ),
+                  ),
+                  CircleAvatar(
+                    radius: 22,
+                    backgroundColor: Color(0xFF0F9B8E),
+                    child: Icon(Icons.calendar_today, color: Colors.white, size: 18),
                   ),
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: 32),
-        ],
+
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  _TaskItem(
+                    title: 'To Do',
+                    subtitle: '$_totalTasks tasks now.',
+                    color: const Color(0xFFE96A6A),
+                    icon: Icons.access_time,
+                  ),
+                  const SizedBox(height: 14),
+                  _TaskItem(
+                    title: 'In Progress',
+                    subtitle: '$_pendingTasks tasks now.',
+                    color: const Color(0xFFF5C16C),
+                    icon: Icons.timelapse,
+                  ),
+                  const SizedBox(height: 14),
+                  _TaskItem(
+                    title: 'Done',
+                    subtitle: '$_doneTasks tasks completed.',
+                    color: const Color(0xFF5D77FF),
+                    icon: Icons.check_circle_outline,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 28),
+
+            // Accès Rapide
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                'Accès Rapide',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 14),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: GridView.count(
+                crossAxisCount: 2,
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  _buildElegantCard(
+                    title: 'Liste Actuelle',
+                    icon: Icons.shopping_bag_outlined,
+                    color: Colors.blue,
+                    onTap: () => setState(() => _currentIndex = 1),
+                  ),
+                  _buildElegantCard(
+                    title: 'Portefeuille',
+                    icon: Icons.account_balance_wallet_outlined,
+                    color: Colors.purple,
+                    onTap: () => setState(() => _currentIndex = 3),
+                  ),
+                  _buildElegantCard(
+                    title: 'Statistiques',
+                    icon: Icons.trending_up_outlined,
+                    color: Colors.orange,
+                    onTap: () => setState(() => _currentIndex = 4),
+                  ),
+                  _buildElegantCard(
+                    title: 'Ajouter Article',
+                    icon: Icons.add_circle_outline,
+                    color: Colors.green,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AddArticlePage(),
+                        ),
+                      ).then((article) {
+                        if (article != null) {
+                          _articleDao.insertArticle(article);
+                          _refreshTasks();
+                        }
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 32),
+          ],
+        ),
       ),
     );
   }
