@@ -404,7 +404,7 @@ class _MyHomePageState extends State<MyHomePage> {
             Container(
               width: double.infinity,
               decoration: const BoxDecoration(
-                color: Color(0xFFF3A75F),
+                color: Color(0xFF65B2FF),
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(28),
                   bottomRight: Radius.circular(28),
@@ -501,7 +501,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: const [
                   Text(
-                    'My Tasks',
+                    'Mes tâches',
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
@@ -523,22 +523,22 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Column(
                 children: [
                   _TaskItem(
-                    title: 'To Do',
-                    subtitle: '$_totalTasks tasks now.',
+                    title: 'À faire',
+                    subtitle: '$_pendingTasks tâches à faire.',
                     color: const Color(0xFFE96A6A),
                     icon: Icons.access_time,
                   ),
                   const SizedBox(height: 14),
                   _TaskItem(
-                    title: 'In Progress',
-                    subtitle: '$_pendingTasks tasks now.',
+                    title: 'En cours',
+                    subtitle: '$_pendingTasks tâches en cours.',
                     color: const Color(0xFFF5C16C),
                     icon: Icons.timelapse,
                   ),
                   const SizedBox(height: 14),
                   _TaskItem(
-                    title: 'Done',
-                    subtitle: '$_doneTasks tasks completed.',
+                    title: 'Terminées',
+                    subtitle: '$_doneTasks tâches terminées.',
                     color: const Color(0xFF5D77FF),
                     icon: Icons.check_circle_outline,
                   ),
